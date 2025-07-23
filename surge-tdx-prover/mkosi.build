@@ -7,7 +7,7 @@ source scripts/make_git_package.sh
 
 build_dotnet_package \
     "nethermind" \
-    "v1.32.3" \
+    "1.32.3" \
     "https://github.com/NethermindEth/nethermind.git" \
     "$NETHERMIND_BINARY" \
     "src/Nethermind/Nethermind.csproj" \
@@ -15,7 +15,7 @@ build_dotnet_package \
 
 build_dotnet_package \
     "nethermind-surge" \
-    "v1.32.3" \
+    "1.32.3" \
     "https://github.com/NethermindEth/nethermind.git" \
     "$NETHERMIND_SURGE_BINARY" \
     "src/Nethermind/Nethermind.csproj" \
