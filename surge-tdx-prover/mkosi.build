@@ -10,7 +10,7 @@ build_dotnet_package \
     "1.32.3" \
     "https://github.com/NethermindEth/nethermind.git" \
     "$NETHERMIND_BINARY" \
-    "src/Nethermind/Nethermind.csproj" \
+    "src/Nethermind/Nethermind.Runner" \
     ""
 
 build_dotnet_package \
@@ -18,7 +18,7 @@ build_dotnet_package \
     "1.32.3" \
     "https://github.com/NethermindEth/nethermind.git" \
     "$NETHERMIND_SURGE_BINARY" \
-    "src/Nethermind/Nethermind.csproj" \
+    "src/Nethermind/Nethermind.Runner" \
     ""
 
 build_rust_package \

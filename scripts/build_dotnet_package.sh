@@ -43,7 +43,7 @@ build_dotnet_package() {
             return 1
         fi
     else
-        project_file="$build_dir/$project_path"
+        project_file="/build/$package/$project_path"
     fi
 
     # Define build properties for reproducibility
