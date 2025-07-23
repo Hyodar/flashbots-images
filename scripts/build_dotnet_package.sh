@@ -51,19 +51,14 @@ build_dotnet_package() {
         "-p:BuildTimestamp=0"
         "-p:Commit=0000000000000000000000000000000000000000"
         "-p:PublishSingleFile=true"
-        # "-p:PublishTrimmed=true"
         "-p:PublishReadyToRun=true"
         "-p:DebugType=none"
-        "-p:DebugSymbols=false"
-        "-p:EnableCompressionInSingleFile=true"
-        "-p:IncludeNativeLibrariesForSelfExtract=true"
-        "-p:StripSymbols=true"
-        "-p:TrimMode=full"
-        "-p:InvariantGlobalization=true"
         "-p:Deterministic=true"
         "-p:ContinuousIntegrationBuild=true"
+        "-p:IncludeAllContentForSelfExtract=true"
         "-p:IncludePackageReferencesDuringMarkupCompilation=true"
         "-p:EmbedUntrackedSources=true"
+        "-p:PublishRepositoryUrl=true"
     )
 
     # Build inside mkosi chroot
