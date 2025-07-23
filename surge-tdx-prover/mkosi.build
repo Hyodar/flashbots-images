@@ -11,7 +11,7 @@ build_dotnet_package \
     "https://github.com/NethermindEth/nethermind.git" \
     "$NETHERMIND_BINARY" \
     "src/Nethermind/Nethermind.csproj" \
-    "--runtime linux-x64"
+    ""
 
 build_dotnet_package \
     "nethermind-surge" \
@@ -19,7 +19,7 @@ build_dotnet_package \
     "https://github.com/NethermindEth/nethermind.git" \
     "$NETHERMIND_SURGE_BINARY" \
     "src/Nethermind/Nethermind.csproj" \
-    "--runtime linux-x64"
+    ""
 
 build_rust_package \
     "lighthouse" \
