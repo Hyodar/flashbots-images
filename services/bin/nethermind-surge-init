@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+# Create and setup persistent directory
+mkdir -p /persistent/nethermind-surge
+chown nethermind-surge:eth /persistent/nethermind-surge
