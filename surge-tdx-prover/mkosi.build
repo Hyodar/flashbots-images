@@ -42,8 +42,8 @@ build_rust_package \
     "$RAIKO_VERSION" \
     "https://github.com/NethermindEth/raiko.git" \
     "$RAIKO_BINARY" \
-    "" \
     "tdx,raiko-tasks/in-memory" \
+    "" \
     "raiko-host"
 
 make_git_package \
