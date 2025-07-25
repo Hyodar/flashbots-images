@@ -9,8 +9,10 @@ make_git_package() {
     local build_cmd="$4"
     # All remaining arguments are artifact mappings in src:dest format
     
+    local safe_version="${version//\//_}"
+
     mkdir -p "$DESTDIR/usr/bin"
-    local cache_dir="$BUILDDIR/${package}-${version}"
+    local cache_dir="$BUILDDIR/${package}-${safe_version}"
     
     # Use cached artifacts if available
     if [ -n "$cache_dir" ] && [ -d "$cache_dir" ] && [ "$(ls -A "$cache_dir" 2>/dev/null)" ]; then

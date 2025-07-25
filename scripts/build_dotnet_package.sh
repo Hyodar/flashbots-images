@@ -9,6 +9,8 @@ build_dotnet_package() {
     local extra_args="${6:-}"      # Extra dotnet publish arguments
     local runtime="${7:-linux-x64}" # Target runtime identifier
 
+    local safe_version="${version//\//_}"
+
     local dest_path="$DESTDIR/usr/bin/$package"
     mkdir -p "$DESTDIR/usr/bin"
 
@@ -21,7 +23,7 @@ build_dotnet_package() {
     fi
 
     # If binary is cached, skip compilation
-    local cached_binary="$BUILDDIR/${package}-${version}-${runtime}"
+    local cached_binary="$BUILDDIR/${package}-${safe_version}-${runtime}"
     if [ -f "$cached_binary" ]; then
         echo "Using cached binary for $package version $version"
         cp "$cached_binary" "$dest_path"

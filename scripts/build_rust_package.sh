@@ -9,6 +9,8 @@ build_rust_package() {
     local extra_rustflags="${6:-}"
     local workspace_package="${7:-}"
 
+    local safe_version="${version//\//_}"
+
     local dest_path="$DESTDIR/usr/bin/$package"
     mkdir -p "$DESTDIR/usr/bin"
 
@@ -20,7 +22,7 @@ build_rust_package() {
     fi
 
     # If binary is cached, skip compilation
-    local cached_binary="$BUILDDIR/${package}-${version}"
+    local cached_binary="$BUILDDIR/${package}-${safe_version}"
     if [ -f "$cached_binary" ]; then
         echo "Using cached binary for $package version $version"
         cp "$cached_binary" "$dest_path"
