@@ -7,6 +7,7 @@ build_rust_package() {
     local provided_binary="$4"
     local extra_features="${5:-}"
     local extra_rustflags="${6:-}"
+    local workspace_package="${7:-}"
 
     local dest_path="$DESTDIR/usr/bin/$package"
     mkdir -p "$DESTDIR/usr/bin"
@@ -50,7 +51,7 @@ build_rust_package() {
                CARGO_TERM_COLOR='never'
         cd '/build/$package'
         cargo fetch
-        cargo build --release --frozen ${extra_features:+--features $extra_features}
+        cargo build --release --frozen ${extra_features:+--features $extra_features} ${workspace_package:+--package $workspace_package}
     "
 
     # Cache and install the built binary
