@@ -8,12 +8,6 @@ mkosi-chroot useradd -r -s /bin/false -G eth nethermind
 mkosi-chroot useradd -r -s /bin/false -G eth nethermind-surge
 mkosi-chroot useradd -r -s /bin/false -G eth taiko-client
 
-# Set limits for Nethermind users
-sudo bash -c 'echo "nethermind soft nofile 100000" > /etc/security/limits.d/global-nofile.conf'
-sudo bash -c 'echo "nethermind hard nofile 100000" >> /etc/security/limits.d/global-nofile.conf'
-sudo bash -c 'echo "nethermind-surge soft nofile 100000" >> /etc/security/limits.d/global-nofile.conf'
-sudo bash -c 'echo "nethermind-surge hard nofile 100000" >> /etc/security/limits.d/global-nofile.conf'
-
 # Install services
 install -m 755 services/bin/lighthouse-init "$BUILDROOT/usr/bin/"
 install -m 755 services/bin/nethermind-init "$BUILDROOT/usr/bin/"
