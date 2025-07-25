@@ -9,7 +9,7 @@ Group=nethermind
 EnvironmentFile=/home/nethermind/.env
 WorkingDirectory=/home/nethermind
 ExecStartPre=+/usr/bin/nethermind-init
-ExecStart=/home/nethermind/bin/nethermind \
+ExecStart=/usr/bin/nethermind \
     --config hoodi \
     --dd /persistent/nethermind \
     --Sync.NonValidatorNode true \
