@@ -6,6 +6,7 @@ mkosi-chroot groupadd -r eth
 mkosi-chroot useradd -r -s /bin/false -G eth lighthouse
 mkosi-chroot useradd -r -s /bin/false -G eth nethermind
 mkosi-chroot useradd -r -s /bin/false -G eth nethermind-surge
+mkosi-chroot useradd -r -s /bin/false -G eth taiko-client
 
 # Set limits for Nethermind users
 sudo bash -c 'echo "nethermind soft nofile 100000" > /etc/security/limits.d/global-nofile.conf'

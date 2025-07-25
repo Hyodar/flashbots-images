@@ -27,7 +27,24 @@ build_rust_package \
     "https://github.com/sigp/lighthouse.git" \
     "$LIGHTHOUSE_BINARY" \
     "modern" \
-    "-l z -l zstd -l snappy"
+    "-l z -l zstd -l snappy" \
+    ""
+
+make_git_package \
+    "taiko-client" \
+    "v0.1.1" \
+    "https://github.com/NethermindEth/surge-taiko-mono/" \
+    "cd packages/taiko-client && make build" \
+    "packages/taiko-client/out/taiko-client:/usr/bin/taiko-client"
+
+build_rust_package \
+    "raiko" \
+    "feat/tdx" \
+    "https://github.com/NethermindEth/raiko.git" \
+    "$RAIKO_BINARY" \
+    "" \
+    "tdx,raiko-tasks/in-memory" \
+    "raiko-host"
 
 make_git_package \
     "tdx-init" \

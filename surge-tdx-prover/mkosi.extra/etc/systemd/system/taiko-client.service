@@ -1,0 +1,26 @@
+[Unit]
+Description=Taiko Client
+Documentation=https://docs.surge.wtf/
+After=network.target
+
+[Service]
+User=taiko-client
+Group=taiko-client
+EnvironmentFile=/etc/nethermind-surge/.env.hoodi
+WorkingDirectory=/home/taiko-client
+ExecStartPre=+/usr/bin/taiko-client-init
+ExecStart=/usr/bin/taiko-client \
+    --l1.ws "${L1_ENDPOINT_WS}" \
+    --l2.ws ws://localhost:"${L2_WS_PORT}" \
+    --l1.beacon "${L1_BEACON_HTTP}" \
+    --l2.auth http://localhost:"${L2_ENGINE_API_PORT}" \
+    --taikoL1 "${TAIKO_L1_ADDRESS}" \
+    --taikoL2 "${TAIKO_L2_ADDRESS}" \
+    --jwtSecret /tmp/surge_jwt.hex \
+    --metrics true \
+    --p2p.sync \
+    --p2p.checkPointSyncUrl "${P2P_SYNC_URL}"
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
