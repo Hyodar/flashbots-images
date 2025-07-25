@@ -38,7 +38,7 @@ make_git_package \
     "packages/taiko-client/bin/taiko-client:/usr/bin/taiko-client"
 
 build_rust_package \
-    "raiko" \
+    "raiko-host:raiko" \
     "$RAIKO_VERSION" \
     "https://github.com/NethermindEth/raiko.git" \
     "$RAIKO_BINARY" \
