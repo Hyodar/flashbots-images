@@ -35,7 +35,7 @@ make_git_package \
     "$TAIKO_CLIENT_VERSION" \
     "https://github.com/NethermindEth/surge-taiko-mono/" \
     "cd packages/taiko-client && make build" \
-    "packages/taiko-client/out/taiko-client:/usr/bin/taiko-client"
+    "packages/taiko-client/bin/taiko-client:/usr/bin/taiko-client"
 
 build_rust_package \
     "raiko" \
