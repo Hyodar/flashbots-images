@@ -5,9 +5,17 @@ source scripts/build_rust_package.sh
 source scripts/build_dotnet_package.sh
 source scripts/make_git_package.sh
 
+NETHERMIND_VERSION="1.32.3"
+LIGHTHOUSE_VERSION="v7.0.1"
+TAIKO_CLIENT_VERSION="main-pacaya-v1.6.1"
+RAIKO_VERSION="feat/tdx"
+TDX_INIT_VERSION="v0.1.1"
+SSH_PUBKEY_SERVER_VERSION="multi-key"
+CVM_REVERSE_PROXY_VERSION="v0.1.7"
+
 build_dotnet_package \
     "nethermind" \
-    "1.32.3" \
+    "$NETHERMIND_VERSION" \
     "https://github.com/NethermindEth/nethermind.git" \
     "$NETHERMIND_BINARY" \
     "src/Nethermind/Nethermind.Runner" \
@@ -15,7 +23,7 @@ build_dotnet_package \
 
 build_rust_package \
     "lighthouse" \
-    "v7.0.1" \
+    "$LIGHTHOUSE_VERSION" \
     "https://github.com/sigp/lighthouse.git" \
     "$LIGHTHOUSE_BINARY" \
     "modern" \
@@ -24,14 +32,14 @@ build_rust_package \
 
 make_git_package \
     "taiko-client" \
-    "v0.1.1" \
+    "$TAIKO_CLIENT_VERSION" \
     "https://github.com/NethermindEth/surge-taiko-mono/" \
     "cd packages/taiko-client && make build" \
     "packages/taiko-client/out/taiko-client:/usr/bin/taiko-client"
 
 build_rust_package \
     "raiko" \
-    "feat/tdx" \
+    "$RAIKO_VERSION" \
     "https://github.com/NethermindEth/raiko.git" \
     "$RAIKO_BINARY" \
     "" \
@@ -40,21 +48,21 @@ build_rust_package \
 
 make_git_package \
     "tdx-init" \
-    "v0.1.1" \
+    "$TDX_INIT_VERSION" \
     "https://github.com/flashbots/tdx-init" \
     'go build -trimpath -ldflags "-s -w -buildid=" -o ./build/tdx-init' \
     "build/tdx-init:/usr/bin/tdx-init"
 
 make_git_package \
     "ssh-pubkey-server" \
-    "multi-key" \
+    "$SSH_PUBKEY_SERVER_VERSION" \
     "https://github.com/flashbots/ssh-pubkey-server" \
     'go build -trimpath -ldflags "-s -w -buildid= -X github.com/flashbots/go-template/common.Version=v1.0.0" -o ./build/ssh-pubkey-server cmd/httpserver/main.go' \
     "build/ssh-pubkey-server:/usr/bin/ssh-pubkey-server"
 
 make_git_package \
     "cvm-reverse-proxy" \
-    "v0.1.7" \
+    "$CVM_REVERSE_PROXY_VERSION" \
     "https://github.com/flashbots/cvm-reverse-proxy" \
     "make build-proxy-server" \
     "build/proxy-server:/usr/bin/cvm-reverse-proxy"
