@@ -82,7 +82,7 @@ build_dotnet_package() {
             --configuration Release \
             --runtime '$runtime' \
             --self-contained true \
-            --output '/tmp/publish' \
+            --output '/build/$package/publish' \
             ${build_props[*]} \
             $extra_args
     "
@@ -90,10 +90,10 @@ build_dotnet_package() {
     # Find the published binary
     local published_binary=""
     if [ -f "$build_dir/../../../tmp/publish/$package" ]; then
-        published_binary="$build_dir/../../../tmp/publish/$package"
+        published_binary="$build_dir/publish/$package"
     else
         # Try to find the binary with common patterns
-        published_binary=$(find "$build_dir/../../../tmp/publish" -type f -executable -name "$package*" | head -n1)
+        published_binary=$(find "$build_dir/publish" -type f -executable -name "$package*" | head -n1)
     fi
 
     if [ -z "$published_binary" ] || [ ! -f "$published_binary" ]; then
@@ -106,7 +106,7 @@ build_dotnet_package() {
     install -m 755 "$cached_binary" "$dest_path"
     
     # Clean up temporary publish directory
-    rm -rf "$build_dir/../../../tmp/publish"
+    rm -rf "$build_dir/publish"
 }
 
 # Example usage:
