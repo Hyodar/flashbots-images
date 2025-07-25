@@ -42,9 +42,10 @@ for service in \
     dropbear.service \
     ssh-pubkey-server.service \
     cvm-reverse-proxy.service \
-    nethermind.service \
     nethermind-surge.service \
-    lighthouse.service
+    taiko-client.service
+    # nethermind.service
+    # lighthouse.service
 do
     mkosi-chroot systemctl enable "$service"
     ln -sf "/etc/systemd/system/$service" "$BUILDROOT/etc/systemd/system/minimal.target.wants/"
