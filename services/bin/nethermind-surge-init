@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+# Generate JWT token if it doesn't exist
+if [ ! -f /tmp/surge_jwt.hex ]; then
+    openssl rand -hex 32 | tr -d "\n" | tee /tmp/surge_jwt.hex
+    chown nethermind-surge:eth /tmp/surge_jwt.hex
+    chmod 644 /tmp/surge_jwt.hex
+fi
+
 # Create and setup persistent directory
 mkdir -p /persistent/nethermind-surge
 chown nethermind-surge:eth /persistent/nethermind-surge
