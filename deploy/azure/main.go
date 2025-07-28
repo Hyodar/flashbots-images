@@ -30,6 +30,7 @@ const (
 type DeploymentInfo struct {
 	ID              string    `json:"id"`
 	SubscriptionID  string    `json:"subscription_id"`
+	TenantID        string    `json:"tenant_id"`
 	ResourceGroup   string    `json:"resource_group"`
 	VMName          string    `json:"vm_name"`
 	OSDiskName      string    `json:"os_disk_name"`
@@ -44,6 +45,7 @@ type DeploymentInfo struct {
 
 type AzureClient struct {
 	cred           azcore.TokenCredential
+	tenantID       string
 	subscriptionID string
 	ctx            context.Context
 	computeClient  *armcompute.DisksClient
@@ -92,12 +94,14 @@ func main() {
 	deployCmd.Flags().String("vnet-name", "", "Virtual network name (optional, will try to find one)")
 	deployCmd.Flags().String("subnet-name", "default", "Subnet name (default: 'default')")
 	deployCmd.Flags().String("subscription-id", "", "Azure subscription ID")
+	deployCmd.Flags().String("tenant-id", "", "Azure tenant ID")
 
 	deployCmd.MarkFlagRequired("id")
 	deployCmd.MarkFlagRequired("disk-path")
 	deployCmd.MarkFlagRequired("resource-group")
 	deployCmd.MarkFlagRequired("region")
 	deployCmd.MarkFlagRequired("subscription-id")
+	deployCmd.MarkFlagRequired("tenant-id")
 
 	rootCmd.AddCommand(deployCmd, deleteCmd, listCmd)
 
@@ -107,14 +111,17 @@ func main() {
 	}
 }
 
-func createAzureClient(ctx context.Context, subscriptionID string) (*AzureClient, error) {
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
+func createAzureClient(ctx context.Context, tenantID, subscriptionID string) (*AzureClient, error) {
+	cred, err := azidentity.NewDefaultAzureCredential(&azidentity.DefaultAzureCredentialOptions{
+		TenantID: tenantID,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to obtain credentials: %w", err)
 	}
 
 	client := &AzureClient{
 		cred:           cred,
+		tenantID:       tenantID,
 		subscriptionID: subscriptionID,
 		ctx:            ctx,
 	}
@@ -177,6 +184,7 @@ func deployCommand(cmd *cobra.Command, args []string) error {
 	vnetName, _ := cmd.Flags().GetString("vnet-name")
 	subnetName, _ := cmd.Flags().GetString("subnet-name")
 	subscriptionID, _ := cmd.Flags().GetString("subscription-id")
+	tenantID, _ := cmd.Flags().GetString("tenant-id")
 
 	// Validate deployment ID doesn't exist
 	deploymentFile := getDeploymentFile(deploymentID)
@@ -192,7 +200,7 @@ func deployCommand(cmd *cobra.Command, args []string) error {
 	diskSize := diskInfo.Size()
 
 	// Create Azure client
-	client, err := createAzureClient(ctx, subscriptionID)
+	client, err := createAzureClient(ctx, tenantID, subscriptionID)
 	if err != nil {
 		return err
 	}
@@ -201,6 +209,7 @@ func deployCommand(cmd *cobra.Command, args []string) error {
 	vmName := fmt.Sprintf("surgetdx-%s", deploymentID)
 	deployment := DeploymentInfo{
 		ID:              deploymentID,
+		TenantID:        tenantID,
 		SubscriptionID:  subscriptionID,
 		ResourceGroup:   resourceGroup,
 		VMName:          vmName,
@@ -785,7 +794,7 @@ func deleteCommand(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create Azure client
-	client, err := createAzureClient(ctx, deployment.SubscriptionID)
+	client, err := createAzureClient(ctx, deployment.TenantID, deployment.SubscriptionID)
 	if err != nil {
 		return err
 	}
