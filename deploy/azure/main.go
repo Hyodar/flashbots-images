@@ -485,7 +485,7 @@ func createNSG(client *AzureClient, deployment DeploymentInfo, allowedIP string)
 		{"TCP8548", 116, "8548", "*", armnetwork.SecurityRuleProtocolTCP},
 		{"TCP8552", 117, "8552", "*", armnetwork.SecurityRuleProtocolTCP},
 		{"TCP30313", 118, "30313", "*", armnetwork.SecurityRuleProtocolTCP},
-		{"ANY30303", 114, "30303", "*", armnetwork.SecurityRuleProtocolAsterisk},
+		{"ANY30303", 119, "30303", "*", armnetwork.SecurityRuleProtocolAsterisk},
 	}
 
 	for _, rule := range rules {
