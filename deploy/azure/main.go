@@ -112,9 +112,7 @@ func main() {
 }
 
 func createAzureClient(ctx context.Context, tenantID, subscriptionID string) (*AzureClient, error) {
-	cred, err := azidentity.NewDefaultAzureCredential(&azidentity.DefaultAzureCredentialOptions{
-		TenantID: tenantID,
-	})
+	cred, err := azidentity.NewAzureCLICredential(&azidentity.AzureCLICredentialOptions{TenantID: tenantID})
 	if err != nil {
 		return nil, fmt.Errorf("failed to obtain credentials: %w", err)
 	}
