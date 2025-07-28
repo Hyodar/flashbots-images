@@ -210,7 +210,34 @@ func deployCommand(cmd *cobra.Command, args []string) error {
 		CreatedAt:       time.Now(),
 	}
 
-	fmt.Printf("🚀 Starting deployment '%s' in resource group '%s'...\n", deploymentID, resourceGroup)
+	// Display deployment configuration
+	fmt.Printf("\n📋 Deployment Configuration:\n")
+	fmt.Printf("─────────────────────────────────────────────────────────────\n")
+	fmt.Printf("   Deployment ID:     %s\n", deploymentID)
+	fmt.Printf("   Subscription ID:   %s\n", subscriptionID)
+	fmt.Printf("   Resource Group:    %s\n", resourceGroup)
+	fmt.Printf("   Region:            %s\n", region)
+	fmt.Printf("   VM Name:           %s\n", vmName)
+	fmt.Printf("   VM Size:           %s\n", vmSize)
+	fmt.Printf("   Disk Image:        %s (%.2f GB)\n", diskPath, float64(diskSize)/(1024*1024*1024))
+	fmt.Printf("   Storage Disk:      %d GB\n", storageGB)
+	fmt.Printf("   SSH Allowed IP:    %s\n", allowedIP)
+	if vnetName != "" {
+		fmt.Printf("   VNet Name:         %s\n", vnetName)
+	} else {
+		fmt.Printf("   VNet Name:         <auto-detect>\n")
+	}
+	fmt.Printf("   Subnet Name:       %s\n", subnetName)
+	fmt.Printf("\n🏗️  Resources to be created:\n")
+	fmt.Printf("   • VM:              %s\n", vmName)
+	fmt.Printf("   • OS Disk:         %s\n", deployment.OSDiskName)
+	fmt.Printf("   • Storage Disk:    %s\n", deployment.StorageDiskName)
+	fmt.Printf("   • Network SG:      %s\n", deployment.NSGName)
+	fmt.Printf("   • Public IP:       %s-ip\n", vmName)
+	fmt.Printf("   • Network Interface: %s-nic\n", vmName)
+	fmt.Printf("─────────────────────────────────────────────────────────────\n")
+
+	fmt.Printf("\n🚀 Starting deployment '%s' in resource group '%s'...\n", deploymentID, resourceGroup)
 
 	// Create OS Disk
 	fmt.Println("📦 Creating OS disk...")
