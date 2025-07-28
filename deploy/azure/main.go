@@ -90,7 +90,7 @@ func main() {
 	deployCmd.Flags().String("allowed-ip", "*", "Allowed IP for SSH")
 	deployCmd.Flags().String("vnet-name", "", "Virtual network name (optional, will try to find one)")
 	deployCmd.Flags().String("subnet-name", "default", "Subnet name (default: 'default')")
-	deployCmd.Flags().String("subscription-id", "", "Azure subscription ID (optional)")
+	deployCmd.Flags().String("subscription-id", "", "Azure subscription ID")
 
 	deployCmd.MarkFlagRequired("id")
 	deployCmd.MarkFlagRequired("disk-path")
