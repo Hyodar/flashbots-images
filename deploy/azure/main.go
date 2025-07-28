@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -219,7 +220,7 @@ func deployCommand(cmd *cobra.Command, args []string) error {
 	fmt.Printf("   Region:            %s\n", region)
 	fmt.Printf("   VM Name:           %s\n", vmName)
 	fmt.Printf("   VM Size:           %s\n", vmSize)
-	fmt.Printf("   Disk Image:        %s (%.2f GB)\n", diskPath, float64(diskSize)/(1024*1024*1024))
+	fmt.Printf("   Disk Image:        %s (%d GB)\n", diskPath, bytesToGB(diskSize))
 	fmt.Printf("   Storage Disk:      %d GB\n", storageGB)
 	fmt.Printf("   SSH Allowed IP:    %s\n", allowedIP)
 	if vnetName != "" {
@@ -319,7 +320,7 @@ func createOSDisk(client *AzureClient, deployment DeploymentInfo, diskSize int64
 				CreateOption:    to.Ptr(armcompute.DiskCreateOptionUpload),
 				UploadSizeBytes: to.Ptr(diskSize),
 			},
-			DiskSizeGB:       to.Ptr(int32((diskSize + 1073741823) / 1073741824)), // Round up to GB
+			DiskSizeGB:       to.Ptr(bytesToGB(diskSize)),
 			HyperVGeneration: to.Ptr(armcompute.HyperVGenerationV2),
 			SecurityProfile: &armcompute.DiskSecurityProfile{
 				SecurityType: to.Ptr(armcompute.DiskSecurityTypesConfidentialVMNonPersistedTPM),
@@ -997,4 +998,8 @@ func loadDeploymentInfo(deploymentID string) (DeploymentInfo, error) {
 
 	err = json.Unmarshal(data, &deployment)
 	return deployment, err
+}
+
+func bytesToGB(bytes int64) int32 {
+	return int32(math.Ceil(float64(bytes) / (1024 * 1024 * 1024)))
 }
