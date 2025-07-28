@@ -54,7 +54,6 @@ type AzureClient struct {
 	nsgRulesClient *armnetwork.SecurityRulesClient
 	nicClient      *armnetwork.InterfacesClient
 	publicIPClient *armnetwork.PublicIPAddressesClient
-	vnetClient     *armnetwork.VirtualNetworksClient
 	attestClient   *armattestation.ProvidersClient
 }
 
@@ -155,11 +154,6 @@ func createAzureClient(ctx context.Context, tenantID, subscriptionID string) (*A
 		return nil, err
 	}
 
-	client.vnetClient, err = armnetwork.NewVirtualNetworksClient(subscriptionID, cred, nil)
-	if err != nil {
-		return nil, err
-	}
-
 	client.attestClient, err = armattestation.NewProvidersClient(subscriptionID, cred, nil)
 	if err != nil {
 		return nil, err
@@ -214,6 +208,7 @@ func deployCommand(cmd *cobra.Command, args []string) error {
 		OSDiskName:      vmName,
 		StorageDiskName: fmt.Sprintf("%s-storage", vmName),
 		NSGName:         vmName,
+		PublicIPName:    fmt.Sprintf("%s-ip", vmName),
 		Location:        region,
 		CreatedAt:       time.Now(),
 	}
@@ -273,14 +268,14 @@ func deployCommand(cmd *cobra.Command, args []string) error {
 
 	// Create VM
 	fmt.Println("🖥️  Creating virtual machine...")
-	publicIPName, nicName, err := createVM(client, deployment, vmSize, "", vnetName, subnetName)
-	if err != nil {
+	if err := createVM(client, deployment, vmSize, ""); err != nil {
 		return fmt.Errorf("failed to create VM: %w", err)
 	}
 
-	// Update deployment info with network resources
-	deployment.PublicIPName = publicIPName
-	deployment.NICName = nicName
+	// Update deployment info with public IP name for later retrieval
+	if err := updatePublicIPInfo(client, &deployment); err != nil {
+		fmt.Printf("⚠️  Warning: Could not retrieve public IP info: %v\n", err)
+	}
 
 	// Save deployment info
 	if err := saveDeploymentInfo(deployment); err != nil {
@@ -303,7 +298,7 @@ func deployCommand(cmd *cobra.Command, args []string) error {
 	fmt.Printf("   Resource Group: %s\n", deployment.ResourceGroup)
 	fmt.Printf("   Location: %s\n", deployment.Location)
 	if publicIPAddress != "" {
-		fmt.Printf("   Public IP: %s\n", publicIPAddress)
+		fmt.Printf("   Public IP Address: %s\n", publicIPAddress)
 	}
 	fmt.Printf("\n💻 Connection:\n")
 	if publicIPAddress != "" {
@@ -546,152 +541,25 @@ func createAttestationProvider(client *AzureClient, deployment DeploymentInfo) (
 	return attestName, *resp.Properties.AttestURI, nil
 }
 
-func createVM(client *AzureClient, deployment DeploymentInfo, vmSize, userData, vnetName, subnetName string) (string, string, error) {
+func createVM(client *AzureClient, deployment DeploymentInfo, vmSize, userData string) error {
 	// Get disk resources
 	osDisk, err := client.computeClient.Get(client.ctx, deployment.ResourceGroup, deployment.OSDiskName, nil)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to get OS disk: %w", err)
+		return fmt.Errorf("failed to get OS disk: %w", err)
 	}
 
 	storageDisk, err := client.computeClient.Get(client.ctx, deployment.ResourceGroup, deployment.StorageDiskName, nil)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to get storage disk: %w", err)
+		return fmt.Errorf("failed to get storage disk: %w", err)
 	}
 
 	// Get NSG
 	nsg, err := client.networkClient.Get(client.ctx, deployment.ResourceGroup, deployment.NSGName, nil)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to get NSG: %w", err)
+		return fmt.Errorf("failed to get NSG: %w", err)
 	}
 
-	// Find or validate VNet
-	var subnetID string
-	if vnetName == "" {
-		// Try to find a VNet in the resource group
-		vnetPager := client.vnetClient.NewListPager(deployment.ResourceGroup, nil)
-		for vnetPager.More() {
-			page, err := vnetPager.NextPage(client.ctx)
-			if err != nil {
-				return "", "", fmt.Errorf("failed to list VNets: %w", err)
-			}
-			if len(page.Value) > 0 {
-				vnet := page.Value[0]
-				vnetName = *vnet.Name
-				if vnet.Properties != nil && vnet.Properties.Subnets != nil && len(vnet.Properties.Subnets) > 0 {
-					// Look for the specified subnet or use the first one
-					for _, subnet := range vnet.Properties.Subnets {
-						if subnet.Name != nil && *subnet.Name == subnetName {
-							subnetID = *subnet.ID
-							break
-						}
-					}
-					if subnetID == "" && len(vnet.Properties.Subnets) > 0 {
-						subnetID = *vnet.Properties.Subnets[0].ID
-					}
-				}
-				break
-			}
-		}
-		if vnetName == "" {
-			return "", "", fmt.Errorf("no VNet found in resource group %s. Please specify --vnet-name", deployment.ResourceGroup)
-		}
-	} else {
-		// Use specified VNet
-		vnet, err := client.vnetClient.Get(client.ctx, deployment.ResourceGroup, vnetName, nil)
-		if err != nil {
-			return "", "", fmt.Errorf("failed to get VNet %s: %w", vnetName, err)
-		}
-		if vnet.Properties != nil && vnet.Properties.Subnets != nil {
-			for _, subnet := range vnet.Properties.Subnets {
-				if subnet.Name != nil && *subnet.Name == subnetName {
-					subnetID = *subnet.ID
-					break
-				}
-			}
-		}
-	}
-
-	if subnetID == "" {
-		return "", "", fmt.Errorf("subnet %s not found in VNet %s", subnetName, vnetName)
-	}
-
-	fmt.Printf("   Using VNet: %s, Subnet: %s\n", vnetName, subnetName)
-
-	// Create Public IP
-	publicIPName := fmt.Sprintf("%s-ip", deployment.VMName)
-	publicIP := armnetwork.PublicIPAddress{
-		Location: to.Ptr(deployment.Location),
-		Properties: &armnetwork.PublicIPAddressPropertiesFormat{
-			PublicIPAllocationMethod: to.Ptr(armnetwork.IPAllocationMethodStatic),
-			PublicIPAddressVersion:   to.Ptr(armnetwork.IPVersionIPv4),
-		},
-		SKU: &armnetwork.PublicIPAddressSKU{
-			Name: to.Ptr(armnetwork.PublicIPAddressSKUNameStandard),
-		},
-		Tags: map[string]*string{
-			"Project": to.Ptr(projectTag),
-			"VM":      to.Ptr(deployment.VMName),
-		},
-	}
-
-	publicIPPoller, err := client.publicIPClient.BeginCreateOrUpdate(
-		client.ctx,
-		deployment.ResourceGroup,
-		publicIPName,
-		publicIP,
-		nil,
-	)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to create public IP: %w", err)
-	}
-
-	publicIPResp, err := publicIPPoller.PollUntilDone(client.ctx, nil)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to create public IP: %w", err)
-	}
-
-	// Create Network Interface
-	nicName := fmt.Sprintf("%s-nic", deployment.VMName)
-	nic := armnetwork.Interface{
-		Location: to.Ptr(deployment.Location),
-		Properties: &armnetwork.InterfacePropertiesFormat{
-			IPConfigurations: []*armnetwork.InterfaceIPConfiguration{
-				{
-					Name: to.Ptr("ipconfig1"),
-					Properties: &armnetwork.InterfaceIPConfigurationPropertiesFormat{
-						Subnet: &armnetwork.Subnet{
-							ID: to.Ptr(subnetID),
-						},
-						PrivateIPAllocationMethod: to.Ptr(armnetwork.IPAllocationMethodDynamic),
-						PublicIPAddress:           &armnetwork.PublicIPAddress{ID: publicIPResp.ID},
-					},
-				},
-			},
-			NetworkSecurityGroup: &armnetwork.SecurityGroup{ID: nsg.ID},
-		},
-		Tags: map[string]*string{
-			"Project": to.Ptr(projectTag),
-			"VM":      to.Ptr(deployment.VMName),
-		},
-	}
-
-	nicPoller, err := client.nicClient.BeginCreateOrUpdate(
-		client.ctx,
-		deployment.ResourceGroup,
-		nicName,
-		nic,
-		nil,
-	)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to create network interface: %w", err)
-	}
-
-	nicResp, err := nicPoller.PollUntilDone(client.ctx, nil)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to create network interface: %w", err)
-	}
-
-	// Create VM
+	// Create VM (Azure will handle network creation automatically)
 	vm := armcompute.VirtualMachine{
 		Location: to.Ptr(deployment.Location),
 		Properties: &armcompute.VirtualMachineProperties{
@@ -717,11 +585,27 @@ func createVM(client *AzureClient, deployment DeploymentInfo, vmSize, userData, 
 				},
 			},
 			NetworkProfile: &armcompute.NetworkProfile{
-				NetworkInterfaces: []*armcompute.NetworkInterfaceReference{
+				NetworkInterfaceConfigurations: []*armcompute.VirtualMachineNetworkInterfaceConfiguration{
 					{
-						ID: nicResp.ID,
-						Properties: &armcompute.NetworkInterfaceReferenceProperties{
+						Name: to.Ptr(fmt.Sprintf("%s-nic", deployment.VMName)),
+						Properties: &armcompute.VirtualMachineNetworkInterfaceConfigurationProperties{
 							Primary: to.Ptr(true),
+							IPConfigurations: []*armcompute.VirtualMachineNetworkInterfaceIPConfiguration{
+								{
+									Name: to.Ptr("ipconfig1"),
+									Properties: &armcompute.VirtualMachineNetworkInterfaceIPConfigurationProperties{
+										PublicIPAddressConfiguration: &armcompute.VirtualMachinePublicIPAddressConfiguration{
+											Name: to.Ptr(fmt.Sprintf("%s-ip", deployment.VMName)),
+											Properties: &armcompute.VirtualMachinePublicIPAddressConfigurationProperties{
+												PublicIPAllocationMethod: to.Ptr(armcompute.PublicIPAllocationMethodStatic),
+											},
+										},
+									},
+								},
+							},
+							NetworkSecurityGroup: &armcompute.SubResource{
+								ID: nsg.ID,
+							},
 						},
 					},
 				},
@@ -749,11 +633,11 @@ func createVM(client *AzureClient, deployment DeploymentInfo, vmSize, userData, 
 		nil,
 	)
 	if err != nil {
-		return "", "", err
+		return err
 	}
 
 	_, err = poller.PollUntilDone(client.ctx, nil)
-	return publicIPName, nicName, err
+	return err
 }
 
 func deleteCommand(cmd *cobra.Command, args []string) error {
@@ -1008,4 +892,46 @@ func loadDeploymentInfo(deploymentID string) (DeploymentInfo, error) {
 
 func bytesToGB(bytes int64) int32 {
 	return int32(math.Ceil(float64(bytes) / (1024 * 1024 * 1024)))
+}
+
+func updatePublicIPInfo(client *AzureClient, deployment *DeploymentInfo) error {
+	// Get VM to find actual network interface
+	vm, err := client.vmClient.Get(client.ctx, deployment.ResourceGroup, deployment.VMName, nil)
+	if err != nil {
+		return fmt.Errorf("failed to get VM: %w", err)
+	}
+
+	// Extract public IP name from VM's network interface
+	if vm.Properties != nil && vm.Properties.NetworkProfile != nil {
+		if len(vm.Properties.NetworkProfile.NetworkInterfaces) > 0 {
+			nicID := vm.Properties.NetworkProfile.NetworkInterfaces[0].ID
+			if nicID != nil {
+				// Extract NIC name from resource ID
+				parts := strings.Split(*nicID, "/")
+				if len(parts) > 0 {
+					nicName := parts[len(parts)-1]
+
+					// Get NIC to find public IP
+					nic, err := client.nicClient.Get(client.ctx, deployment.ResourceGroup, nicName, nil)
+					if err == nil && nic.Properties != nil {
+						if len(nic.Properties.IPConfigurations) > 0 {
+							ipConfig := nic.Properties.IPConfigurations[0]
+							if ipConfig.Properties != nil && ipConfig.Properties.PublicIPAddress != nil {
+								pubIPID := ipConfig.Properties.PublicIPAddress.ID
+								if pubIPID != nil {
+									// Extract public IP name from resource ID
+									parts := strings.Split(*pubIPID, "/")
+									if len(parts) > 0 {
+										deployment.PublicIPName = parts[len(parts)-1]
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return nil
 }
