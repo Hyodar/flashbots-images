@@ -327,7 +327,6 @@ func createOSDisk(client *AzureClient, deployment DeploymentInfo, diskSize int64
 				CreateOption:    to.Ptr(armcompute.DiskCreateOptionUpload),
 				UploadSizeBytes: to.Ptr(diskSize),
 			},
-			DiskSizeGB:       to.Ptr(bytesToGB(diskSize)),
 			HyperVGeneration: to.Ptr(armcompute.HyperVGenerationV2),
 			SecurityProfile: &armcompute.DiskSecurityProfile{
 				SecurityType: to.Ptr(armcompute.DiskSecurityTypesConfidentialVMNonPersistedTPM),
