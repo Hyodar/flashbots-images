@@ -85,7 +85,7 @@ func main() {
 	deployCmd.Flags().String("disk-path", "", "Path to disk image (required)")
 	deployCmd.Flags().String("resource-group", "", "Azure resource group (required)")
 	deployCmd.Flags().String("region", "", "Azure region (required)")
-	deployCmd.Flags().String("vm-size", "Standard_DC2as_v5", "Azure VM size")
+	deployCmd.Flags().String("vm-size", "Standard_EC4es_v5", "Azure VM size")
 	deployCmd.Flags().Int("storage-gb", 100, "Storage disk size in GB")
 	deployCmd.Flags().String("allowed-ip", "*", "Allowed IP for SSH")
 	deployCmd.Flags().String("vnet-name", "", "Virtual network name (optional, will try to find one)")
