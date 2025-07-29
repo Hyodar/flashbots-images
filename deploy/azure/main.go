@@ -38,6 +38,8 @@ type DeploymentInfo struct {
 	NSGName         string    `json:"nsg_name"`
 	PublicIPName    string    `json:"public_ip_name"`
 	NICName         string    `json:"nic_name"`
+	VNetName        string    `json:"vnet_name,omitempty"`
+	SubnetName      string    `json:"subnet_name,omitempty"`
 	AttestationName string    `json:"attestation_name,omitempty"`
 	Location        string    `json:"location"`
 	CreatedAt       time.Time `json:"created_at"`
@@ -54,6 +56,8 @@ type AzureClient struct {
 	nsgRulesClient *armnetwork.SecurityRulesClient
 	nicClient      *armnetwork.InterfacesClient
 	publicIPClient *armnetwork.PublicIPAddressesClient
+	vnetClient     *armnetwork.VirtualNetworksClient
+	subnetClient   *armnetwork.SubnetsClient
 	attestClient   *armattestation.ProvidersClient
 }
 
@@ -154,6 +158,16 @@ func createAzureClient(ctx context.Context, tenantID, subscriptionID string) (*A
 		return nil, err
 	}
 
+	client.vnetClient, err = armnetwork.NewVirtualNetworksClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	client.subnetClient, err = armnetwork.NewSubnetsClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	client.attestClient, err = armattestation.NewProvidersClient(subscriptionID, cred, nil)
 	if err != nil {
 		return nil, err
@@ -238,6 +252,12 @@ func deployCommand(cmd *cobra.Command, args []string) error {
 	fmt.Printf("   • Network SG:      %s\n", deployment.NSGName)
 	fmt.Printf("   • Public IP:       %s-ip\n", vmName)
 	fmt.Printf("   • Network Interface: %s-nic\n", vmName)
+	if vnetName != "" {
+		fmt.Printf("   • Virtual Network: %s\n", vnetName)
+	} else {
+		fmt.Printf("   • Virtual Network: %s-vnet (auto-created)\n", vmName)
+	}
+	fmt.Printf("   • Subnet:          %s\n", subnetName)
 	fmt.Printf("─────────────────────────────────────────────────────────────\n")
 
 	fmt.Printf("\n🚀 Starting deployment '%s' in resource group '%s'...\n", deploymentID, resourceGroup)
@@ -268,7 +288,7 @@ func deployCommand(cmd *cobra.Command, args []string) error {
 
 	// Create VM
 	fmt.Println("🖥️  Creating virtual machine...")
-	if err := createVM(client, deployment, vmSize, ""); err != nil {
+	if err := createVM(client, &deployment, vmSize, "", vnetName, subnetName); err != nil {
 		return fmt.Errorf("failed to create VM: %w", err)
 	}
 
@@ -541,7 +561,83 @@ func createAttestationProvider(client *AzureClient, deployment DeploymentInfo) (
 	return attestName, *resp.Properties.AttestURI, nil
 }
 
-func createVM(client *AzureClient, deployment DeploymentInfo, vmSize, userData string) error {
+func findOrCreateSubnet(client *AzureClient, deployment DeploymentInfo, vnetName, subnetName string) (*armnetwork.Subnet, string, error) {
+	// If no vnet name provided, use a default name
+	if vnetName == "" {
+		vnetName = fmt.Sprintf("%s-vnet", deployment.VMName)
+	}
+
+	// Try to get existing VNet
+	_, err := client.vnetClient.Get(client.ctx, deployment.ResourceGroup, vnetName, nil)
+	if err != nil {
+		// VNet doesn't exist, create it
+		fmt.Printf("   Creating virtual network: %s\n", vnetName)
+		newVNet := armnetwork.VirtualNetwork{
+			Location: to.Ptr(deployment.Location),
+			Properties: &armnetwork.VirtualNetworkPropertiesFormat{
+				AddressSpace: &armnetwork.AddressSpace{
+					AddressPrefixes: []*string{
+						to.Ptr("10.0.0.0/16"),
+					},
+				},
+			},
+			Tags: map[string]*string{
+				"Project": to.Ptr(projectTag),
+				"VM":      to.Ptr(deployment.VMName),
+			},
+		}
+
+		vnetPoller, err := client.vnetClient.BeginCreateOrUpdate(
+			client.ctx,
+			deployment.ResourceGroup,
+			vnetName,
+			newVNet,
+			nil,
+		)
+		if err != nil {
+			return nil, "", fmt.Errorf("failed to create VNet: %w", err)
+		}
+
+		_, err = vnetPoller.PollUntilDone(client.ctx, nil)
+		if err != nil {
+			return nil, "", fmt.Errorf("failed to create VNet: %w", err)
+		}
+	}
+
+	// Try to get existing subnet
+	subnet, err := client.subnetClient.Get(client.ctx, deployment.ResourceGroup, vnetName, subnetName, nil)
+	if err != nil {
+		// Subnet doesn't exist, create it
+		fmt.Printf("   Creating subnet: %s\n", subnetName)
+		newSubnet := armnetwork.Subnet{
+			Properties: &armnetwork.SubnetPropertiesFormat{
+				AddressPrefix: to.Ptr("10.0.0.0/24"),
+			},
+		}
+
+		subnetPoller, err := client.subnetClient.BeginCreateOrUpdate(
+			client.ctx,
+			deployment.ResourceGroup,
+			vnetName,
+			subnetName,
+			newSubnet,
+			nil,
+		)
+		if err != nil {
+			return nil, "", fmt.Errorf("failed to create subnet: %w", err)
+		}
+
+		subnetResp, err := subnetPoller.PollUntilDone(client.ctx, nil)
+		if err != nil {
+			return nil, "", fmt.Errorf("failed to create subnet: %w", err)
+		}
+		return &subnetResp.Subnet, vnetName, nil
+	}
+
+	return &subnet.Subnet, vnetName, nil
+}
+
+func createVM(client *AzureClient, deployment *DeploymentInfo, vmSize, userData, vnetName, subnetName string) error {
 	// Get disk resources
 	osDisk, err := client.computeClient.Get(client.ctx, deployment.ResourceGroup, deployment.OSDiskName, nil)
 	if err != nil {
@@ -558,6 +654,16 @@ func createVM(client *AzureClient, deployment DeploymentInfo, vmSize, userData s
 	if err != nil {
 		return fmt.Errorf("failed to get NSG: %w", err)
 	}
+
+	// Find or create subnet
+	subnet, actualVNetName, err := findOrCreateSubnet(client, *deployment, vnetName, subnetName)
+	if err != nil {
+		return fmt.Errorf("failed to find or create subnet: %w", err)
+	}
+
+	// Store the actual VNet and subnet names used
+	deployment.VNetName = actualVNetName
+	deployment.SubnetName = subnetName
 
 	// Create VM (Azure will handle network creation automatically)
 	vm := armcompute.VirtualMachine{
@@ -595,6 +701,9 @@ func createVM(client *AzureClient, deployment DeploymentInfo, vmSize, userData s
 								{
 									Name: to.Ptr("ipconfig1"),
 									Properties: &armcompute.VirtualMachineNetworkInterfaceIPConfigurationProperties{
+										Subnet: &armcompute.SubResource{
+											ID: subnet.ID,
+										},
 										PublicIPAddressConfiguration: &armcompute.VirtualMachinePublicIPAddressConfiguration{
 											Name: to.Ptr(fmt.Sprintf("%s-ip", deployment.VMName)),
 											Properties: &armcompute.VirtualMachinePublicIPAddressConfigurationProperties{
@@ -666,6 +775,12 @@ func deleteCommand(cmd *cobra.Command, args []string) error {
 	if deployment.AttestationName != "" {
 		fmt.Printf("  - Attestation Provider: %s\n", deployment.AttestationName)
 	}
+	if deployment.SubnetName != "" {
+		fmt.Printf("  - Subnet: %s\n", deployment.SubnetName)
+	}
+	if deployment.VNetName != "" {
+		fmt.Printf("  - Virtual Network: %s\n", deployment.VNetName)
+	}
 
 	fmt.Print("\nAre you sure you want to continue? [y/N]: ")
 	var response string
@@ -727,6 +842,22 @@ func deleteCommand(cmd *cobra.Command, args []string) error {
 		fmt.Println("  Deleting Attestation Provider...")
 		if err := deleteAttestationProvider(client, deployment); err != nil {
 			fmt.Printf("  ⚠️  Failed to delete attestation provider: %v\n", err)
+		}
+	}
+
+	// Delete subnet
+	if deployment.SubnetName != "" {
+		fmt.Println("  Deleting Subnet...")
+		if err := deleteSubnet(client, deployment); err != nil {
+			fmt.Printf("  ⚠️  Failed to delete subnet: %v\n", err)
+		}
+	}
+
+	// Delete VNet
+	if deployment.VNetName != "" {
+		fmt.Println("  Deleting Virtual Network...")
+		if err := deleteVNet(client, deployment); err != nil {
+			fmt.Printf("  ⚠️  Failed to delete VNet: %v\n", err)
 		}
 	}
 
@@ -820,6 +951,43 @@ func deleteAttestationProvider(client *AzureClient, deployment DeploymentInfo) e
 	}
 	_ = resp
 	return nil
+}
+
+func deleteSubnet(client *AzureClient, deployment DeploymentInfo) error {
+	if deployment.SubnetName == "" || deployment.VNetName == "" {
+		return nil // Nothing to delete
+	}
+
+	poller, err := client.subnetClient.BeginDelete(
+		client.ctx,
+		deployment.ResourceGroup,
+		deployment.VNetName,
+		deployment.SubnetName,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+	_, err = poller.PollUntilDone(client.ctx, nil)
+	return err
+}
+
+func deleteVNet(client *AzureClient, deployment DeploymentInfo) error {
+	if deployment.VNetName == "" {
+		return nil // Nothing to delete
+	}
+
+	poller, err := client.vnetClient.BeginDelete(
+		client.ctx,
+		deployment.ResourceGroup,
+		deployment.VNetName,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+	_, err = poller.PollUntilDone(client.ctx, nil)
+	return err
 }
 
 func listCommand(cmd *cobra.Command, args []string) error {
