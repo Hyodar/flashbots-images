@@ -585,6 +585,7 @@ func createVM(client *AzureClient, deployment DeploymentInfo, vmSize, userData s
 				},
 			},
 			NetworkProfile: &armcompute.NetworkProfile{
+				NetworkAPIVersion: to.Ptr(armcompute.NetworkAPIVersionTwoThousandTwenty1101),
 				NetworkInterfaceConfigurations: []*armcompute.VirtualMachineNetworkInterfaceConfiguration{
 					{
 						Name: to.Ptr(fmt.Sprintf("%s-nic", deployment.VMName)),
