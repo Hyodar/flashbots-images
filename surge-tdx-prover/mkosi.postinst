@@ -3,10 +3,10 @@ set -euxo pipefail
 
 # Create users and groups
 mkosi-chroot groupadd -r eth
-mkosi-chroot useradd -r -s /bin/false -G eth lighthouse
-mkosi-chroot useradd -r -s /bin/false -G eth nethermind
-mkosi-chroot useradd -r -s /bin/false -G eth nethermind-surge
-mkosi-chroot useradd -r -s /bin/false -G eth taiko-client
+mkosi-chroot useradd -r -s /bin/false -G eth -m lighthouse
+mkosi-chroot useradd -r -s /bin/false -G eth -m nethermind
+mkosi-chroot useradd -r -s /bin/false -G eth -m nethermind-surge
+mkosi-chroot useradd -r -s /bin/false -G eth -m taiko-client
 
 # Install services
 install -m 755 services/bin/lighthouse-init "$BUILDROOT/usr/bin/"
