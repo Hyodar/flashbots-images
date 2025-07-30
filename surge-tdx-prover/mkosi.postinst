@@ -32,7 +32,7 @@ for service in \
     network-setup.service \
     openntpd.service \
     logrotate.service \
-    wait-for-key.service \
+    tdx-setup.service \
     dropbear.service \
     ssh-pubkey-server.service \
     cvm-reverse-proxy.service \
