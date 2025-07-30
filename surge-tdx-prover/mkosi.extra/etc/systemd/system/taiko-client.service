@@ -1,7 +1,8 @@
 [Unit]
 Description=Taiko Client
 Documentation=https://docs.surge.wtf/
-After=network.target
+After=network.target tdx-setup.service
+Requires=tdx-setup.service
 
 [Service]
 User=taiko-client

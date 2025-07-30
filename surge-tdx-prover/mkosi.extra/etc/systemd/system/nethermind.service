@@ -1,7 +1,8 @@
 [Unit]
 Description=Nethermind node
 Documentation=https://docs.nethermind.io
-After=network.target lighthouse.service
+After=network.target lighthouse.service tdx-setup.service
+Requires=tdx-setup.service
 
 [Service]
 User=nethermind

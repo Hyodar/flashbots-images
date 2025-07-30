@@ -1,7 +1,8 @@
 [Unit]
 Description=Nethermind Surge node
 Documentation=https://docs.nethermind.io
-After=network.target
+After=network.target tdx-setup.service
+Requires=tdx-setup.service
 
 [Service]
 User=nethermind-surge
