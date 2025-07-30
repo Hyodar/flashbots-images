@@ -30,7 +30,7 @@ ExecStart=/usr/bin/nethermind \
     --Sync.FastSync=false \
     --Sync.SnapSync=false \
     --HealthChecks.Enabled=true \
-    --log=${NETHERMIND_LOG_LEVEL} \
+    --log=${NETHERMIND_LOG_LEVEL}
 Restart=on-failure
 LimitNOFILE=1000000
 
