@@ -49,6 +49,17 @@ done
 mkosi-chroot systemctl disable ssh.service ssh.socket
 mkosi-chroot systemctl mask ssh.service ssh.socket
 
+# Install SSH public key if available
+if [ -f "id_ed25519.pub" ]; then
+    mkdir -p "$BUILDROOT/etc/dropbear"
+    cat "id_ed25519.pub" >> "$BUILDROOT/etc/dropbear/authorized_keys"
+    mkosi-chroot chmod 0600 "/etc/dropbear/authorized_keys"
+
+    mkdir -p "$BUILDROOT/root/.ssh"
+    cat "id_ed25519.pub" >> "$BUILDROOT/root/.ssh/authorized_keys"
+    mkosi-chroot chmod 0600 "/root/.ssh/authorized_keys"
+fi
+
 # # Lock the root account
 # mkosi-chroot passwd -l root
 
