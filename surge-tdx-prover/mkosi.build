@@ -7,7 +7,7 @@ source scripts/make_git_package.sh
 
 NETHERMIND_VERSION="1.32.3"
 LIGHTHOUSE_VERSION="v7.0.1"
-TAIKO_CLIENT_VERSION="main-pacaya-v1.6.1"
+TAIKO_CLIENT_VERSION="main"
 RAIKO_VERSION="feat/tdx"
 TDX_INIT_VERSION="v0.0.1"
 SSH_PUBKEY_SERVER_VERSION="multi-key"
