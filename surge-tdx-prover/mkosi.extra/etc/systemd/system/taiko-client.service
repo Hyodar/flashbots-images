@@ -6,7 +6,7 @@ Requires=tdx-setup.service
 
 [Service]
 User=taiko-client
-Group=taiko-client
+Group=eth
 EnvironmentFile=/etc/nethermind-surge/.env.hoodi
 WorkingDirectory=/home/taiko-client
 ExecStartPre=+/usr/bin/taiko-client-init
