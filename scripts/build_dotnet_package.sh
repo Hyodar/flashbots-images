@@ -18,11 +18,30 @@ build_dotnet_package() {
         for artifact_map in "${@:7}"; do
             local src="${artifact_map%%:*}"
             local dest="${artifact_map#*:}"
+            local cached_name="$(echo "$src" | tr '/' '_')"
+            
             mkdir -p "$(dirname "$DESTDIR$dest")"
-            cp "$cache_dir/$(echo "$src" | tr '/' '_')" "$DESTDIR$dest"
-            # Ensure executables have proper permissions
-            if [[ "$dest" == */bin/* ]]; then
-                chmod +x "$DESTDIR$dest"
+            
+            # Check if it's a cached directory (stored as tarball)
+            if [ -f "$cache_dir/${cached_name}.tar.gz" ]; then
+                # Extract directory from cache
+                local clean_dest="${dest%/}"
+                mkdir -p "$DESTDIR$clean_dest"
+                tar -xzf "$cache_dir/${cached_name}.tar.gz" -C "$DESTDIR$clean_dest" --strip-components=1
+                
+                # Set executable permissions for binaries in bin directories
+                if [[ "$clean_dest" == */bin/* ]] || [[ "$clean_dest" == */bin ]]; then
+                    find "$DESTDIR$clean_dest" -type f -exec chmod +x {} \;
+                fi
+            elif [ -f "$cache_dir/$cached_name" ]; then
+                # Copy cached file
+                cp "$cache_dir/$cached_name" "$DESTDIR$dest"
+                # Ensure executables have proper permissions
+                if [[ "$dest" == */bin/* ]]; then
+                    chmod +x "$DESTDIR$dest"
+                fi
+            else
+                echo "Warning: Cached artifact not found: $cached_name"
             fi
         done
         return 0
@@ -120,21 +139,39 @@ build_dotnet_package() {
 
         # Copy the built artifact to the destination
         mkdir -p "$(dirname "$DESTDIR$dest")"
-        cp -r "$resolved_src" "$DESTDIR$dest"
         
-        # Ensure executables have proper permissions
-        if [[ "$dest" == */bin/* ]]; then
-            chmod +x "$DESTDIR$dest"
+        # Handle both files and directories
+        if [ -d "$resolved_src" ]; then
+            # For directories, ensure destination doesn't have trailing slash issues
+            local clean_dest="${dest%/}"
+            cp -r "$resolved_src" "$DESTDIR$clean_dest"
+            
+            # Set executable permissions for binaries in bin directories
+            if [[ "$clean_dest" == */bin/* ]] || [[ "$clean_dest" == */bin ]]; then
+                find "$DESTDIR$clean_dest" -type f -exec chmod +x {} \;
+            fi
+            
+            # Cache directory as tarball
+            tar -czf "$cache_dir/$(echo "$src" | tr '/' '_').tar.gz" -C "$(dirname "$resolved_src")" "$(basename "$resolved_src")"
+        else
+            # For files
+            cp "$resolved_src" "$DESTDIR$dest"
+            
+            # Ensure executables have proper permissions
+            if [[ "$dest" == */bin/* ]]; then
+                chmod +x "$DESTDIR$dest"
+            fi
+            
+            # Cache file
+            cp "$resolved_src" "$cache_dir/$(echo "$src" | tr '/' '_')"
         fi
-        
-        # Cache artifact
-        cp -r "$resolved_src" "$cache_dir/$(echo "$src" | tr '/' '_')"
     done
     
     # Clean up temporary publish directory
     rm -rf "$build_dir/publish"
 }
 
+# Helper function to maintain backward compatibility
 build_dotnet_binary() {
     local package="$1"
     local version="$2"
@@ -152,7 +189,8 @@ build_dotnet_binary() {
         chmod +x "$DESTDIR/usr/bin/$package"
         return
     fi
-
+    
+    # Otherwise use the new function with a single artifact mapping
     build_dotnet_package "$package" "$version" "$git_url" "$project_path" "$extra_args" "$runtime" \
         "publish/$package:/usr/bin/$package"
 }
