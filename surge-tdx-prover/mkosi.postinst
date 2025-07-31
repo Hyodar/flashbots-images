@@ -21,13 +21,13 @@ install -m 755 services/bin/taiko-client-init "$BUILDROOT/usr/bin/"
 # Enable services
 mkdir "$BUILDROOT/etc/systemd/system/minimal.target.wants"
 
-for service in \
-    persistence-setup.service
-do
-    install -m 644 "services/systemd/$service" "$BUILDROOT/etc/systemd/system/$service"
-    mkosi-chroot systemctl enable "$service"
-    ln -sf "/etc/systemd/system/$service" "$BUILDROOT/etc/systemd/system/minimal.target.wants/$service"
-done
+# for service in \
+#     persistence-setup.service
+# do
+#     install -m 644 "services/systemd/$service" "$BUILDROOT/etc/systemd/system/$service"
+#     mkosi-chroot systemctl enable "$service"
+#     ln -sf "/etc/systemd/system/$service" "$BUILDROOT/etc/systemd/system/minimal.target.wants/$service"
+# done
 
 for service in \
     network-setup.service \
