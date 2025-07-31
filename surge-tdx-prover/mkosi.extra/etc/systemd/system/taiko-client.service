@@ -10,7 +10,7 @@ Group=eth
 EnvironmentFile=/etc/nethermind-surge/.env.hoodi
 WorkingDirectory=/home/taiko-client
 ExecStartPre=+/usr/bin/taiko-client-init
-ExecStart=/usr/bin/taiko-client \
+ExecStart=/usr/bin/taiko-client driver \
     --l1.ws "${L1_ENDPOINT_WS}" \
     --l2.ws ws://localhost:"${L2_WS_PORT}" \
     --l1.beacon "${L1_BEACON_HTTP}" \
