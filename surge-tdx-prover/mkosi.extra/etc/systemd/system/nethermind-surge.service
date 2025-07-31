@@ -31,7 +31,8 @@ ExecStart=/usr/bin/nethermind \
     --Sync.FastSync=false \
     --Sync.SnapSync=false \
     --HealthChecks.Enabled=true \
-    --log=${NETHERMIND_LOG_LEVEL}
+    --log=${NETHERMIND_LOG_LEVEL} \
+    --logger-config=/etc/nethermind-surge/NLog.config
 Restart=on-failure
 LimitNOFILE=1000000
 
