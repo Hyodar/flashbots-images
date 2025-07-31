@@ -128,7 +128,7 @@ build_dotnet_package() {
         fi
         
         # Cache artifact
-        cp "$resolved_src" "$cache_dir/$(echo "$src" | tr '/' '_')"
+        cp -r "$resolved_src" "$cache_dir/$(echo "$src" | tr '/' '_')"
     done
     
     # Clean up temporary publish directory
