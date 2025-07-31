@@ -6,7 +6,7 @@ Requires=network-setup.service
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/tdx-init setup
-RemainAfterExit=no
+RemainAfterExit=yes
 Restart=on-failure
 RestartSec=5
 
