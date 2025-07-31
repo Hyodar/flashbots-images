@@ -17,9 +17,12 @@ build_dotnet_package \
     "nethermind" \
     "$NETHERMIND_VERSION" \
     "https://github.com/NethermindEth/nethermind.git" \
-    "$NETHERMIND_BINARY" \
     "src/Nethermind/Nethermind.Runner" \
-    ""
+    ""\
+    "" \
+    "publish/nethermind:/usr/bin/nethermind" \
+    "publish/NLog.config:/etc/nethermind-surge/NLog.config" \
+    "publish/plugins:/etc/nethermind-surge/plugins"
 
 build_rust_package \
     "lighthouse" \

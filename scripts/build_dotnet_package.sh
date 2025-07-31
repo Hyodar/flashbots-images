@@ -4,32 +4,30 @@ build_dotnet_package() {
     local package="$1"
     local version="$2"
     local git_url="$3"
-    local provided_binary="$4"
-    local project_path="${5:-.}"  # Path to .csproj relative to repo root
-    local extra_args="${6:-}"      # Extra dotnet publish arguments
-    local runtime="${7:-linux-x64}" # Target runtime identifier
-
+    local project_path="$4"      # Path to .csproj relative to repo root (use "." for auto-detect)
+    local extra_args="$5"         # Extra dotnet publish arguments
+    local runtime="${6:-linux-x64}" # Target runtime identifier
+    # All remaining arguments are artifact mappings in src:dest format
+    
     local safe_version="${version//\//_}"
-
-    local dest_path="$DESTDIR/usr/bin/$package"
-    mkdir -p "$DESTDIR/usr/bin"
-
-    # If binary path is provided, use it directly
-    if [ -n "$provided_binary" ]; then
-        echo "Using provided binary for $package"
-        cp "$provided_binary" "$dest_path"
-        chmod +x "$dest_path"
-        return
+    local cache_dir="$BUILDDIR/${package}-${safe_version}-${runtime}"
+    
+    # Use cached artifacts if available
+    if [ -n "$cache_dir" ] && [ -d "$cache_dir" ] && [ "$(ls -A "$cache_dir" 2>/dev/null)" ]; then
+        echo "Using cached artifacts for $package version $version"
+        for artifact_map in "${@:7}"; do
+            local src="${artifact_map%%:*}"
+            local dest="${artifact_map#*:}"
+            mkdir -p "$(dirname "$DESTDIR$dest")"
+            cp "$cache_dir/$(echo "$src" | tr '/' '_')" "$DESTDIR$dest"
+            # Ensure executables have proper permissions
+            if [[ "$dest" == */bin/* ]]; then
+                chmod +x "$DESTDIR$dest"
+            fi
+        done
+        return 0
     fi
-
-    # If binary is cached, skip compilation
-    local cached_binary="$BUILDDIR/${package}-${safe_version}-${runtime}"
-    if [ -f "$cached_binary" ]; then
-        echo "Using cached binary for $package version $version"
-        cp "$cached_binary" "$dest_path"
-        return
-    fi
-
+    
     # Clone the repository
     local build_dir="$BUILDROOT/build/$package"
     mkdir -p "$build_dir"
@@ -44,8 +42,10 @@ build_dotnet_package() {
             echo "Error: No .csproj or .fsproj file found in $build_dir"
             return 1
         fi
+        # Make it relative to build dir for mkosi-chroot
+        project_file="${project_file#$build_dir/}"
     else
-        project_file="/build/$package/$project_path"
+        project_file="$project_path"
     fi
 
     # Define build properties for reproducibility
@@ -89,27 +89,70 @@ build_dotnet_package() {
             $extra_args
     "
 
-    # Find the published binary
-    local published_binary=""
-    if [ -f "$build_dir/../../../tmp/publish/$package" ]; then
-        published_binary="$build_dir/publish/$package"
-    else
-        # Try to find the binary with common patterns
-        published_binary=$(find "$build_dir/publish" -type f -executable -name "$package*" | head -n1)
-    fi
+    # Copy artifacts to image and cache
+    mkdir -p "$cache_dir"
+    for artifact_map in "${@:7}"; do
+        local src="${artifact_map%%:*}"
+        local dest="${artifact_map#*:}"
+        
+        # Resolve source path (support wildcards and publish directory)
+        local src_path=""
+        if [[ "$src" == publish/* ]]; then
+            # Look in publish directory
+            src_path="$build_dir/$src"
+        else
+            # Look relative to build directory
+            src_path="$build_dir/$src"
+        fi
+        
+        # Handle wildcards
+        local resolved_src=""
+        if [[ "$src_path" == *"*"* ]]; then
+            resolved_src=$(find "$(dirname "$src_path")" -name "$(basename "$src_path")" | head -n1)
+        else
+            resolved_src="$src_path"
+        fi
+        
+        if [ ! -e "$resolved_src" ]; then
+            echo "Error: Source artifact not found: $src"
+            return 1
+        fi
 
-    if [ -z "$published_binary" ] || [ ! -f "$published_binary" ]; then
-        echo "Error: Could not find published binary for $package"
-        return 1
-    fi
-
-    # Cache and install the built binary
-    install -m 755 "$published_binary" "$cached_binary"
-    install -m 755 "$cached_binary" "$dest_path"
+        # Copy the built artifact to the destination
+        mkdir -p "$(dirname "$DESTDIR$dest")"
+        cp -r "$resolved_src" "$DESTDIR$dest"
+        
+        # Ensure executables have proper permissions
+        if [[ "$dest" == */bin/* ]]; then
+            chmod +x "$DESTDIR$dest"
+        fi
+        
+        # Cache artifact
+        cp "$resolved_src" "$cache_dir/$(echo "$src" | tr '/' '_')"
+    done
     
     # Clean up temporary publish directory
     rm -rf "$build_dir/publish"
 }
 
-# Example usage:
-# build_dotnet_package "myapp" "v1.0.0" "https://github.com/user/myapp.git" "" "src/MyApp/MyApp.csproj"
+build_dotnet_binary() {
+    local package="$1"
+    local version="$2"
+    local git_url="$3"
+    local provided_binary="$4"
+    local project_path="${5:-.}"
+    local extra_args="${6:-}"
+    local runtime="${7:-linux-x64}"
+    
+    # If a binary is provided, copy it directly
+    if [ -n "$provided_binary" ]; then
+        echo "Using provided binary for $package"
+        mkdir -p "$DESTDIR/usr/bin"
+        cp "$provided_binary" "$DESTDIR/usr/bin/$package"
+        chmod +x "$DESTDIR/usr/bin/$package"
+        return
+    fi
+
+    build_dotnet_package "$package" "$version" "$git_url" "$project_path" "$extra_args" "$runtime" \
+        "publish/$package:/usr/bin/$package"
+}
