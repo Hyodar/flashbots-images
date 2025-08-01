@@ -8,6 +8,7 @@ if [ ! -f /tmp/surge_jwt.hex ]; then
     chmod 644 /tmp/surge_jwt.hex
 fi
 
-# Create and setup persistent directory
-mkdir -p /persistent/nethermind-surge
-chown nethermind-surge:eth /persistent/nethermind-surge
+mkdir -p /persistent/nethermind-surge/{logs,db,keystore}
+chown -R nethermind-surge:eth /persistent/nethermind-surge
+chmod 755 /persistent/nethermind-surge
+chmod 755 /persistent/nethermind-surge/{logs,db,keystore}
