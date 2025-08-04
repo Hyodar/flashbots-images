@@ -7,6 +7,7 @@ mkosi-chroot useradd -r -s /bin/false -G eth -m lighthouse
 mkosi-chroot useradd -r -s /bin/false -G eth -m nethermind
 mkosi-chroot useradd -r -s /bin/false -G eth -m nethermind-surge
 mkosi-chroot useradd -r -s /bin/false -G eth -m taiko-client
+mkosi-chroot useradd -r -s /bin/false -G eth -m raiko
 
 # Install services
 install -m 755 services/bin/lighthouse-init "$BUILDROOT/usr/bin/"
@@ -38,7 +39,8 @@ for service in \
     ssh-pubkey-server.service \
     cvm-reverse-proxy.service \
     nethermind-surge.service \
-    taiko-client.service
+    taiko-client.service \
+    raiko.service
     # nethermind.service
     # lighthouse.service
 do

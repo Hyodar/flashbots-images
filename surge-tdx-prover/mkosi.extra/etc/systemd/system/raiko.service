@@ -1,0 +1,19 @@
+[Unit]
+Description=Raiko Client
+Documentation=https://docs.surge.wtf/
+After=network.target tdx-setup.service
+Requires=tdx-setup.service
+
+[Service]
+User=raiko
+Group=eth
+EnvironmentFile=/etc/nethermind-surge/.env.hoodi
+WorkingDirectory=/home/raiko
+ExecStart=/usr/bin/raiko \
+    --config-path=/etc/nethermind-surge/raiko_config.json \
+    --chain-spec-path=/etc/nethermind-surge/raiko_chain_spec_list.docker.json \
+    --concurrency-limit=1
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
