@@ -12,7 +12,7 @@ WorkingDirectory=/home/raiko
 ExecStartPre=+/usr/bin/raiko-init
 ExecStart=/usr/bin/raiko \
     --config-path=/etc/nethermind-surge/raiko_config.json \
-    --chain-spec-path=/etc/nethermind-surge/raiko_chain_spec_list.docker.json \
+    --chain-spec-path=/etc/nethermind-surge/raiko_chain_spec_list.json \
     --concurrency-limit=1
 Restart=on-failure
 
