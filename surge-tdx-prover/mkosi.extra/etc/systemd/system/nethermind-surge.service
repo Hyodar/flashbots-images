@@ -1,7 +1,7 @@
 [Unit]
 Description=Nethermind Surge node
 Documentation=https://docs.nethermind.io
-After=network.target tdx-setup.service
+After=network.target tdx-setup.service taiko-client.service
 Requires=tdx-setup.service
 
 [Service]
