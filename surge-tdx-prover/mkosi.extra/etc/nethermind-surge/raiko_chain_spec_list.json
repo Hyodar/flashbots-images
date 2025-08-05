@@ -56,7 +56,7 @@
         },
         "l1_contract": "0xA4edF73b44940fB1Be0b896BF8410C29c285e442",
         "l2_contract": "0x7633750000000000000000000000000000010001",
-        "rpc": "https://l2-rpc-internal.hoodi.surge.wtf",
+        "rpc": "http://localhost:8547",
         "beacon_rpc": null,
         "verifier_address_forks": {
             "HEKLA": {
