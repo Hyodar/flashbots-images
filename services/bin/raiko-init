@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+# Create tpm group
+groupadd -f tpm
+
+# Set permissions on TPM device
+[ -e /dev/tpm0 ] && chown root:tpm /dev/tpm0 && chmod 660 /dev/tpm0
+
+# Add raiko user to tpm group
+id raiko &>/dev/null 2>&1 && usermod -a -G tpm raiko
