@@ -1,0 +1,12 @@
+[Unit]
+Description=TDXS
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/tdxs/config.yaml
+ExecStart=/usr/bin/tdxs driver \
+    --config /etc/tdxs/config.yaml
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

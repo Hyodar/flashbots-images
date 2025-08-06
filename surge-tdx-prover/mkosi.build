@@ -10,6 +10,7 @@ LIGHTHOUSE_VERSION="v7.0.1"
 TAIKO_CLIENT_VERSION="main"
 RAIKO_VERSION="feat/tdx"
 TDX_INIT_VERSION="v0.0.1"
+TDXS_VERSION="master"
 SSH_PUBKEY_SERVER_VERSION="multi-key"
 CVM_REVERSE_PROXY_VERSION="v0.1.7"
 
@@ -55,6 +56,13 @@ make_git_package \
     "https://github.com/Hyodar/tdx-init" \
     'go build -trimpath -ldflags "-s -w -buildid=" -o ./build/tdx-init ./cmd/main.go' \
     "build/tdx-init:/usr/bin/tdx-init"
+
+make_git_package \
+    "tdxs" \
+    "$TDXS_VERSION" \
+    "https://github.com/Hyodar/tdxs" \
+    'go build -trimpath -ldflags "-s -w -buildid=" -o ./build/tdxs ./cmd/main.go' \
+    "build/tdxs:/usr/bin/tdxs"
 
 make_git_package \
     "ssh-pubkey-server" \

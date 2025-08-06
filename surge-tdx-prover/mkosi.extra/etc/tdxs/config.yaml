@@ -1,0 +1,11 @@
+
+transport:
+  type: socket
+  config:
+    file_path: /var/run/tdxs.sock
+    owner: root
+    group: root
+    perm: 0660
+
+issuer:
+  type: azure
