@@ -4,7 +4,7 @@ After=tdx-setup.service
 Requires=tdx-setup.service
 
 [Socket]
-ListenStream=/var/run/tdxs.sock
+ListenStream=/var/tdxs.sock
 SocketMode=0660
 SocketUser=root
 SocketGroup=tdx

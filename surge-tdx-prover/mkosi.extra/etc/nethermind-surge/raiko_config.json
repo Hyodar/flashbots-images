@@ -3,6 +3,6 @@
     "l1_network": "hoodi",
     "tdx": {
         "instance_id": 0,
-        "socket_path": "/var/run/tdxs.sock"
+        "socket_path": "/var/tdxs.sock"
     }
 }
