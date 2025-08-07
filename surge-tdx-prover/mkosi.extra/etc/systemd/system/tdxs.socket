@@ -1,5 +1,7 @@
 [Unit]
 Description=TDXS Socket
+After=tdx-setup.service
+Requires=tdx-setup.service
 
 [Socket]
 ListenStream=/var/run/tdxs.sock

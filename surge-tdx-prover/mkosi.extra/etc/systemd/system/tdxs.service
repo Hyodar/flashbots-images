@@ -1,7 +1,7 @@
 [Unit]
 Description=TDXS
-After=network.target
-Requires=tdxs.socket
+After=network.target tdx-setup.service
+Requires=tdxs.socket tdx-setup.service
 
 [Service]
 Type=notify
