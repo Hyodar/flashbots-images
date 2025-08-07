@@ -8,7 +8,6 @@ Type=notify
 ExecStartPre=+/usr/bin/tdxs-init
 ExecStart=/usr/bin/tdxs \
     --config /etc/tdxs/config.yaml
-StandardInput=socket
 Restart=on-failure
 
 [Install]
