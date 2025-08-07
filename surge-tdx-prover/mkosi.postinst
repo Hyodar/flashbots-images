@@ -43,7 +43,8 @@ for service in \
     nethermind-surge.service \
     taiko-client.service \
     raiko.service \
-    tdxs-socket.socket
+    tdxs.service \
+    tdxs.socket
     # nethermind.service
     # lighthouse.service
 do
