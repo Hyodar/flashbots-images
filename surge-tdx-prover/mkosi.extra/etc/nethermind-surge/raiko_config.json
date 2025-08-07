@@ -1,5 +1,8 @@
 {
     "network": "surge_dev",
     "l1_network": "hoodi",
-    "tdx": {}
+    "tdx": {
+        "instance_id": 0,
+        "socket_path": "/var/run/tdxs.sock"
+    }
 }
