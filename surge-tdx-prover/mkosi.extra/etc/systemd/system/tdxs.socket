@@ -5,7 +5,7 @@ Description=TDXS Socket
 ListenStream=/var/run/tdxs.sock
 SocketMode=0660
 SocketUser=root
-SocketGroup=tpm
+SocketGroup=tdx
 Accept=false
 
 [Install]
