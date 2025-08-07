@@ -1,15 +1,14 @@
 [Unit]
 Description=Raiko Client
 Documentation=https://docs.surge.wtf/
-After=network.target tdx-setup.service
-Requires=tdx-setup.service
+After=network.target tdx-setup.service tdxs.service
+Requires=tdx-setup.service tdxs.service
 
 [Service]
 User=raiko
-Group=eth
+Group=tdx
 EnvironmentFile=/etc/nethermind-surge/.env.hoodi
 WorkingDirectory=/home/raiko
-ExecStartPre=+/usr/bin/raiko-init
 ExecStart=/usr/bin/raiko \
     --config-path=/etc/nethermind-surge/raiko_config.json \
     --chain-spec-path=/etc/nethermind-surge/raiko_chain_spec_list.json \
