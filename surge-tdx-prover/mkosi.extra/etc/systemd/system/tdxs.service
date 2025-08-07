@@ -4,6 +4,9 @@ After=network.target tdx-setup.service
 Requires=tdxs.socket tdx-setup.service
 
 [Service]
+User=tdxs
+Group=tdx
+WorkingDirectory=/home/tdxs
 Type=notify
 ExecStartPre=+/usr/bin/tdxs-init
 ExecStart=/usr/bin/tdxs \
