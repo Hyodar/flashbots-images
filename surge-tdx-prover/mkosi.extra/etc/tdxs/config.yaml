@@ -2,10 +2,7 @@
 transport:
   type: socket
   config:
-    file_path: /var/run/tdxs.sock
-    owner: tdxs
-    group: tdx
-    perm: 0660
+    systemd: true
 
 issuer:
   type: azure

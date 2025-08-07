@@ -42,7 +42,8 @@ for service in \
     cvm-reverse-proxy.service \
     nethermind-surge.service \
     taiko-client.service \
-    raiko.service
+    raiko.service \
+    tdxs-socket.socket
     # nethermind.service
     # lighthouse.service
 do
