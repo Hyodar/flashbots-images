@@ -1,11 +1,13 @@
 [Unit]
 Description=TDXS
-After=network.target tdxs-socket.socket
-Requires=tdxs-socket.socket
+After=network.target
+Requires=tdxs.socket
 
 [Service]
-ExecStart=/usr/bin/tdxs driver \
+Type=notify
+ExecStart=/usr/bin/tdxs \
     --config /etc/tdxs/config.yaml
+StandardInput=socket
 Restart=on-failure
 
 [Install]
