@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+
+[ -e /dev/tpm0 ] && chown root:tdx /dev/tpm0 && chmod 660 /dev/tpm0
