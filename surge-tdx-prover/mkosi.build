@@ -61,7 +61,7 @@ make_git_package \
     "tdxs" \
     "$TDXS_VERSION" \
     "https://github.com/Hyodar/tdxs" \
-    'go build -trimpath -ldflags "-s -w -buildid=" -o ./build/tdxs ./cmd/main.go' \
+    'go build -trimpath -ldflags "-s -w -buildid=" -o ./build/tdxs ./cmd/tdxs/main.go' \
     "build/tdxs:/usr/bin/tdxs"
 
 make_git_package \
