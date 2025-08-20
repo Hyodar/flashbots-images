@@ -2,7 +2,13 @@
     "network": "surge_dev",
     "l1_network": "hoodi",
     "tdx": {
-        "instance_id": 0,
-        "socket_path": "/var/tdxs.sock"
-    }
+        "instance_ids": {
+            "HEKLA": 0,
+            "ONTAKE": 0,
+            "PACAYA": 0
+        },
+        "socket_path": "/var/tdxs.sock",
+        "bootstrap": false,
+        "prove": true
+    },
 }
