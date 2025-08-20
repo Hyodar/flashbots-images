@@ -57,7 +57,8 @@ build_rust_package() {
                CARGO_PROFILE_RELEASE_PANIC='abort' \
                CARGO_PROFILE_RELEASE_INCREMENTAL='false' \
                CARGO_PROFILE_RELEASE_OPT_LEVEL='3' \
-               CARGO_TERM_COLOR='never'
+               CARGO_TERM_COLOR='never' \
+               CARGO_HOME='/build/.cargo'
         cd '/build/$package_name'
         cargo fetch
         cargo build --release --frozen ${extra_features:+--features $extra_features} ${workspace_package:+--package $workspace_package}
