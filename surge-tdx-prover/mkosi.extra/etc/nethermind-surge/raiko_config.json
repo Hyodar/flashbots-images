@@ -10,5 +10,5 @@
         "socket_path": "/var/tdxs.sock",
         "bootstrap": false,
         "prove": true
-    },
+    }
 }
