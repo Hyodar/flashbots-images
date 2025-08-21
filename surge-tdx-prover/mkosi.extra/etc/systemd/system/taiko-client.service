@@ -7,20 +7,21 @@ Requires=tdx-setup.service
 [Service]
 User=taiko-client
 Group=eth
-EnvironmentFile=/etc/nethermind-surge/.env.hoodi
+EnvironmentFile=/etc/nethermind-surge/.env.staging
 WorkingDirectory=/home/taiko-client
 ExecStartPre=+/usr/bin/taiko-client-init
 ExecStart=/usr/bin/taiko-client driver \
-    --l1.ws "${L1_ENDPOINT_WS}" \
+    --verbosity 4 \
+    --l1.ws ${L1_ENDPOINT_WS} \
     --l2.ws ws://localhost:"${L2_WS_PORT}" \
-    --l1.beacon "${L1_BEACON_HTTP}" \
-    --l2.auth http://localhost:"${L2_ENGINE_API_PORT}" \
-    --taikoL1 "${TAIKO_L1_ADDRESS}" \
-    --taikoL2 "${TAIKO_L2_ADDRESS}" \
+    --l1.beacon ${L1_BEACON_HTTP} \
+    --l2.auth http://localhost:${L2_ENGINE_API_PORT} \
+    --taikoInbox ${TAIKO_INBOX} \
+    --taikoAnchor ${TAIKO_ANCHOR} \
     --jwtSecret /tmp/surge_jwt.hex \
+    --p2p.disable \
     --metrics true \
-    --p2p.sync \
-    --p2p.checkPointSyncUrl "${P2P_SYNC_URL}"
+    --metrics.port 6060
 Restart=on-failure
 
 [Install]

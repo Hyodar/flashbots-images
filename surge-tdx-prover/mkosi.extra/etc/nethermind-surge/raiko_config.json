@@ -1,5 +1,5 @@
 {
-    "network": "surge_dev",
+    "network": "surge_staging",
     "l1_network": "hoodi",
     "tdx": {
         "instance_ids": {
