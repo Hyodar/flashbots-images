@@ -1,119 +1,89 @@
 [
-    {
-        "name": "hoodi",
-        "chain_id": 560048,
-        "max_spec_id": "CANCUN",
-        "hard_forks": {
-            "FRONTIER": {
-                "Block": 0
-            },
-            "SHANGHAI": {
-                "Timestamp": 0
-            },
-            "CANCUN": {
-                "Timestamp": 0
-            }
-        },
-        "eip_1559_constants": {
-            "base_fee_change_denominator": "0x8",
-            "base_fee_max_increase_denominator": "0x8",
-            "base_fee_max_decrease_denominator": "0x8",
-            "elasticity_multiplier": "0x2"
-        },
-        "l1_contract": null,
-        "l2_contract": null,
-        "rpc": "{{raiko.l1_rpc}}",
-        "beacon_rpc": "{{raiko.l1_beacon_rpc}}",
-        "verifier_address_forks": {
-            "FRONTIER": {
-                "SGX": null,
-                "SP1": null,
-                "RISC0": null
-            }
-        },
-        "genesis_time": 1742213400,
-        "seconds_per_slot": 12,
-        "is_taiko": false
+  {
+    "name": "surge_dev_l1",
+    "chain_id": 3151908,
+    "max_spec_id": "CANCUN",
+    "hard_forks": {
+      "FRONTIER": {
+        "Block": 0
+      },
+      "SHANGHAI": {
+        "Timestamp": 0
+      },
+      "CANCUN": {
+        "Timestamp": 0
+      }
     },
-    {
-        "name": "surge_dev",
-        "chain_id": 763375,
-        "max_spec_id": "ONTAKE",
-        "hard_forks": {
-            "HEKLA": {
-                "Block": 0
-            },
-            "ONTAKE": {
-                "Block": 1
-            },
-            "CANCUN": "TBD"
-        },
-        "eip_1559_constants": {
-            "base_fee_change_denominator": "0x8",
-            "base_fee_max_increase_denominator": "0x8",
-            "base_fee_max_decrease_denominator": "0x8",
-            "elasticity_multiplier": "0x2"
-        },
-        "l1_contract": "0x4bBeF0eFDe3692b9B31BaCDA30f933D223f18A82",
-        "l2_contract": "0x7633750000000000000000000000000000010001",
-        "rpc": "http://localhost:8547",
-        "beacon_rpc": null,
-        "verifier_address_forks": {
-            "HEKLA": {
-                "SGX": "0xf397b2727c4845bdD53f9fA2a840630CEAC03b50",
-                "SP1": "0x29614C68E47e7fe69C6509a53F141d8F6D362D90",
-                "RISC0": "0x9C01Ff2990545695DE8A2828832939bDcFCA3886"
-            },
-            "ONTAKE": {
-                "SGX": "0xf397b2727c4845bdD53f9fA2a840630CEAC03b50",
-                "SP1": "0x29614C68E47e7fe69C6509a53F141d8F6D362D90",
-                "RISC0": "0x9C01Ff2990545695DE8A2828832939bDcFCA3886"
-            }
-        },
-        "genesis_time": 0,
-        "seconds_per_slot": 1,
-        "is_taiko": true
+    "eip_1559_constants": {
+      "base_fee_change_denominator": "0x8",
+      "base_fee_max_increase_denominator": "0x8",
+      "base_fee_max_decrease_denominator": "0x8",
+      "elasticity_multiplier": "0x2"
     },
-    {
-        "name": "surge_staging",
-        "chain_id": 763374,
-        "max_spec_id": "PACAYA",
-        "hard_forks": {
-			      "HEKLA": {
-			        "Block": 0
-			      },
-			      "ONTAKE": {
-			        "Block": 1
-			      },
-			      "PACAYA": {
-			        "Block": 1
-			      },
-			      "CANCUN": "TBD"
-		    },
-        "eip_1559_constants": {
-            "base_fee_change_denominator": "0x8",
-            "base_fee_max_increase_denominator": "0x8",
-            "base_fee_max_decrease_denominator": "0x8",
-            "elasticity_multiplier": "0x2"
-        },
-        "l1_contract": "0x87913733CBcD740C19fB25c746A79AbcC255e325",
-        "l2_contract": "0x7633740000000000000000000000000000010001",
-        "rpc": "http://localhost:8547",
-        "beacon_rpc": null,
-        "verifier_address_forks": {
-            "HEKLA": {
-                "SGX": "0x70A96aC8377B2DA9363c3d6e209Ba0c946790Ba6",
-                "SP1": "0xF3869bfDe8da5e56F949414dACb41f07428b300e",
-                "RISC0": "0x8b2E27FB36b459fE22004eE5229342b304Df081d"
-            },
-            "ONTAKE": {
-                "SGX": "0x70A96aC8377B2DA9363c3d6e209Ba0c946790Ba6",
-                "SP1": "0xF3869bfDe8da5e56F949414dACb41f07428b300e",
-                "RISC0": "0x8b2E27FB36b459fE22004eE5229342b304Df081d"
-            }
-        },
-        "genesis_time": 0,
-        "seconds_per_slot": 1,
-        "is_taiko": true
-    }
+    "l1_contract": null,
+    "l2_contract": null,
+    "rpc": "{{raiko.l1_rpc}}",
+    "beacon_rpc": "{{raiko.l1_beacon_rpc}}",
+    "verifier_address_forks": {
+      "FRONTIER": {
+        "SGX": null,
+        "SP1": null,
+        "RISC0": null,
+        "TDX": null
+      }
+    },
+    "genesis_time": 1759263599,
+    "seconds_per_slot": 12,
+    "is_taiko": false
+  },
+  {
+    "name": "surge_dev",
+    "chain_id": 763374,
+    "max_spec_id": "PACAYA",
+    "hard_forks": {
+      "HEKLA": {
+        "Block": 0
+      },
+      "ONTAKE": {
+        "Block": 1
+      },
+      "PACAYA": {
+        "Block": 1
+      },
+      "CANCUN": "TBD"
+    },
+    "eip_1559_constants": {
+      "base_fee_change_denominator": "0x8",
+      "base_fee_max_increase_denominator": "0x8",
+      "base_fee_max_decrease_denominator": "0x8",
+      "elasticity_multiplier": "0x2"
+    },
+    "l1_contract": "0x00BE63F4158B1E7f5B8724Ec3f1c5aaE281f1cce",
+    "l2_contract": "0x1000777700000000000000000000000000000001",
+    "rpc": "http://localhost:8547",
+    "beacon_rpc": null,
+    "verifier_address_forks": {
+      "HEKLA": {
+        "SGX": "0x35F135f2b53c4a934030BBCFAd01dadE7C82E576",
+        "SP1": "0xBb4d683Ae82b814ca7d580AF5922306bF63E7A88",
+        "RISC0": "0x5E257fA2Ce9a2eE1831197dd53bD523876d3DA38",
+        "TDX": "0x6f28249B504De7AfCf77B883cc1Ed7F8d9c92bfE"
+      },
+      "ONTAKE": {
+        "SGX": "0x35F135f2b53c4a934030BBCFAd01dadE7C82E576",
+        "SP1": "0xBb4d683Ae82b814ca7d580AF5922306bF63E7A88",
+        "RISC0": "0x5E257fA2Ce9a2eE1831197dd53bD523876d3DA38",
+        "TDX": "0x6f28249B504De7AfCf77B883cc1Ed7F8d9c92bfE"
+      },
+      "PACAYA": {
+        "SGX": "0x35F135f2b53c4a934030BBCFAd01dadE7C82E576",
+        "SP1": "0xBb4d683Ae82b814ca7d580AF5922306bF63E7A88",
+        "RISC0": "0x5E257fA2Ce9a2eE1831197dd53bD523876d3DA38",
+        "TDX": "0x6f28249B504De7AfCf77B883cc1Ed7F8d9c92bfE"
+      }
+    },
+    "genesis_time": 0,
+    "seconds_per_slot": 1,
+    "is_taiko": true
+  }
 ]

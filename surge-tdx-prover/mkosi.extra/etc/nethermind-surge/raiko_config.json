@@ -1,6 +1,7 @@
 {
-    "network": "surge_staging",
-    "l1_network": "hoodi",
+    "network": "surge_dev",
+    "l1_network": "surge_dev_l1",
+    "graffiti":"0x0000000000000000000000000000000000000000000000000000000000000000",
     "tdx": {
         "instance_ids": {
             "HEKLA": 0,

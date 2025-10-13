@@ -7,7 +7,7 @@ Requires=tdx-setup.service tdxs.service
 [Service]
 User=raiko
 Group=tdx
-EnvironmentFile=/etc/nethermind-surge/.env.staging
+EnvironmentFile=/etc/nethermind-surge/.env.devnet
 WorkingDirectory=/home/raiko
 ExecStart=/usr/bin/raiko \
     --config-path=/etc/nethermind-surge/raiko_config.json \
