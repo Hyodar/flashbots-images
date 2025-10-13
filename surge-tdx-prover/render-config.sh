@@ -19,3 +19,4 @@ done
 chmod 644 "$BUILDROOT/etc/nethermind-surge/.env.staging"
 chmod 644 "$BUILDROOT/etc/nethermind-surge/.env.hoodi"
 chmod 644 "$BUILDROOT/etc/nethermind-surge/raiko_chain_spec_list.json"
+chmod 644 "$BUILDROOT/etc/tdxs/config.yaml"
