@@ -21,3 +21,9 @@ chmod 644 "$BUILDROOT/etc/nethermind-surge/.env.hoodi"
 chmod 644 "$BUILDROOT/etc/nethermind-surge/.env.devnet"
 chmod 644 "$BUILDROOT/etc/nethermind-surge/raiko_chain_spec_list.json"
 chmod 644 "$BUILDROOT/etc/tdxs/config.yaml"
+
+# TODO: remove this once not necessary anymore
+L1_CONTRACT=$(jq -r '.raiko.l1_contract' "$ENV_FILE")
+L2_CONTRACT=$(jq -r '.raiko.l2_contract' "$ENV_FILE")
+sed -i "s/0xa3c616dd54F6BB35a736cD6968c8EF7176faCACc/$L1_CONTRACT/g" "$BUILDROOT/usr/bin/raiko"
+sed -i "s/0x7633740000000000000000000000000000010001/$L2_CONTRACT/g" "$BUILDROOT/usr/bin/raiko"
