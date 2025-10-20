@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
-[ -e /dev/tpm0 ] && chown root:tdx /dev/tpm0 && chmod 660 /dev/tpm0
-[ -e /dev/tpmrm0 ] && chown root:tdx /dev/tpmrm0 && chmod 660 /dev/tpmrm0
-[ -e /sys/kernel/security/tpm0/binary_bios_measurements ] && chown root:tdx /sys/kernel/security/tpm0/binary_bios_measurements
+own_file() {
+    [ -e $1 ] && { chown root:tdx $1 && chmod 660 $1; } || true
+}
+
+own_file /dev/tpm0
+own_file /dev/tpmrm0
+own_file /dev/tdx_guest
+own_file /sys/kernel/security/tpm0/binary_bios_measurements
